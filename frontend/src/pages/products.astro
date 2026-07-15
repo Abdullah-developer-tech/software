@@ -1,0 +1,8 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProductsPanel from '../components/ProductPanel.jsx';
+---
+
+<Layout title="Products" active="products">
+  <ProductsPanel client:load />
+</Layout>

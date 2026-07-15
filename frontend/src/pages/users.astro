@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import UsersPanel from '../components/UsersPanel.jsx';
+---
+
+<Layout title="Users" active="users">
+  <UsersPanel client:load />
+</Layout>
+
+<script>
+  const userRaw = localStorage.getItem('sms_user');
+  const user = userRaw ? JSON.parse(userRaw) : null;
+  if (!user || user.role !== 'admin') {
+    window.location.href = '/dashboard';
+  }
+</script>

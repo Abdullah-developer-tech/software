@@ -1,0 +1,284 @@
+---
+// Main Login / Landing Page for Stock Manager
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In · Stock Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #5cb88f;
+        --primary-hover: #4ca37d;
+        --bg-dark: #121824;
+        --card-bg: #1e2640;
+        --text-main: #ffffff;
+        --text-muted: #9ca3af;
+        --border-color: #2e3a5f;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .login-container {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 440px;
+        padding: 40px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .brand-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .brand-icon {
+        background-color: var(--primary);
+        color: var(--bg-dark);
+        font-family: 'Lexend', sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+      }
+
+      .brand-info h2 {
+        font-family: 'Lexend', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .brand-info p {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      h1 {
+        font-family: 'Lexend', sans-serif;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 28px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+
+      input {
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      input:focus {
+        border-color: var(--primary);
+      }
+
+      .error-alert {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #f87171;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .btn-submit {
+        width: 100%;
+        background-color: var(--primary);
+        color: #121824;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 8px;
+      }
+
+      .btn-submit:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      .setup-link {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 13px;
+      }
+
+      .setup-link a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .setup-link a:hover {
+        color: var(--primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="brand-header">
+        <div class="brand-icon">SM</div>
+        <div class="brand-info">
+          <h2>Stock Manager</h2>
+          <p>Inventory & invoicing</p>
+        </div>
+      </div>
+
+      <h1>Sign in to your account</h1>
+      <p class="subtitle">Enter your credentials to continue.</p>
+
+      <div class="error-alert" id="errorAlert"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="name@example.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••••••"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Sign In</button>
+      </form>
+    </div>
+
+    <script>
+      import { saveSession, getToken } from '../lib/auth';
+
+      // Agar user pehle se login hai, toh use direct products par bhejein
+      const activeToken = getToken();
+      if (activeToken) {
+        window.location.href = '/products';
+      }
+
+      const form = document.getElementById('loginForm') as HTMLFormElement;
+      const errorAlert = document.getElementById('errorAlert') as HTMLDivElement;
+      const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorAlert.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Signing In...';
+
+        const formData = new FormData(form);
+        const email = formData.get('email');
+        const password = formData.get('password');
+
+        try {
+          // Dynamic backend connection URL standard check
+          const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            // ✅ API response key mapping sync:
+            // data.token -> token save hoga
+            // data.user  -> pura user credentials object save hoga
+            saveSession(data.token, data.user);
+
+            // Redirect as per correct authenticated role
+            if (data.user && data.user.role === 'admin') {
+              window.location.href = '/dashboard';
+            } else {
+              window.location.href = '/products';
+            }
+          } else {
+            errorAlert.textContent = data.message || 'Invalid email or password';
+            errorAlert.style.display = 'block';
+          }
+        } catch (err) {
+          console.error('Login Error:', err);
+          errorAlert.textContent = 'Connection failed. Please ensure your backend is running.';
+          errorAlert.style.display = 'block';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        }
+      });
+    </script>
+  </body>
+</html>

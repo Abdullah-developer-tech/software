@@ -1,0 +1,8 @@
+---
+import Layout from '../layouts/Layout.astro';
+import StockPanel from '../components/StockPanel.jsx';
+---
+
+<Layout title="Stock Ledger" active="stock">
+  <StockPanel client:load />
+</Layout>

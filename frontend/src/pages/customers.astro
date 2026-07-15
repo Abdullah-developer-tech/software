@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SimpleCrudPanel from '../components/SimpleCrudPanel.jsx';
+---
+
+<Layout title="Customers" active="customers">
+  <SimpleCrudPanel
+    client:load
+    type="customers"
+    resourcePath="customers" 
+    title="Customer"
+    adminOnlyWrite={true}
+    fields={[
+      { name: 'name', label: 'Customer Name', required: true },
+      { name: 'contactPerson', label: 'Contact Person' },
+      { name: 'phone', label: 'Phone' },
+      { name: 'email', label: 'Email', type: 'email' },
+      { name: 'address', label: 'Address', type: 'textarea' },
+    ]}
+    columns={[
+      { key: 'name', label: 'Name' },
+      { key: 'contactPerson', label: 'Contact Person' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'email', label: 'Email' },
+    ]}
+  />
+</Layout>

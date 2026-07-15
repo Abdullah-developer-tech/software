@@ -1,0 +1,137 @@
+---
+import UserMenu from '../components/UserMenu.jsx';
+import '../styles/global.css';
+
+const { title = 'Stock Manager', active = '' } = Astro.props;
+
+// 🛡️ All Navigation Items
+const navItems = [
+  { key: 'dashboard', href: '/dashboard', label: 'Dashboard' },
+  { key: 'products', href: '/products', label: 'Products' },
+  { key: 'categories', href: '/categories', label: 'Categories' },
+  { key: 'suppliers', href: '/suppliers', label: 'Suppliers' },
+  { key: 'customers', href: '/customers', label: 'Customers' },
+  { key: 'stock', href: '/stock', label: 'Stock In / Out' },
+  { key: 'invoices', href: '/invoices', label: 'Invoice' },
+  { key: 'reports', href: '/reports', label: 'Reports' },
+  { key: 'users', href: '/users', label: 'Users' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} · Stock Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <span class="mark">SM</span>
+          <span>Stock Manager</span>
+        </div>
+        <nav>
+          {
+            navItems.map((item) => (
+              <a
+                href={item.href}
+                class={`nav-link ${active === item.key ? 'active' : ''}`}
+                data-key={item.key}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+        <div class="sidebar-footer">
+          <div style="font-size:11.5px; color:#7b8496;">
+            &copy; {new Date().getFullYear()} Stock Manager
+          </div>
+        </div>
+      </aside>
+      <main class="main-area">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">{active}</div>
+            <h1>{title}</h1>
+          </div>
+          <UserMenu client:load />
+        </div>
+        <slot />
+      </main>
+    </div>
+
+    <script>
+      // 1. Direct LocalStorage Auth Guard (No imports = No Rolldown loop crash!)
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/';
+      }
+
+      // 2. Fetch User & Parse role safely
+      let role = 'staff';
+      let userEmail = '';
+      
+      try {
+        const rawUser = localStorage.getItem('user');
+        if (rawUser) {
+          const parsedUser = JSON.parse(rawUser);
+          userEmail = parsedUser.email ? parsedUser.email.toString().toLowerCase().trim() : '';
+          const rawRole = parsedUser.role ? parsedUser.role.toString().toLowerCase().trim() : 'staff';
+          
+          if (userEmail === 'aslamabdullah288@gmail.com' || rawRole === 'admin') {
+            role = 'admin';
+          }
+        }
+      } catch (e) {
+        console.error("Local storage user parse error:", e);
+      }
+
+      // 3. Allowed routes for Staff
+      const allowedStaffPages = ['products', 'stock', 'invoices'];
+
+      // 4. 🛑 Block links click
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener('click', (e) => {
+          const targetKey = link.getAttribute('data-key');
+          if (role !== 'admin' && targetKey && !allowedStaffPages.includes(targetKey)) {
+            e.preventDefault();
+            alert("❌ Invalid Access! You do not have permission to view this section.");
+          }
+        });
+      });
+
+      // 5. 🛡️ URL Direct Input Protection
+      const currentPath = window.location.pathname;
+      const isAdminRoute = currentPath.includes('dashboard') || 
+                           currentPath.includes('reports') || 
+                           currentPath.includes('users') || 
+                           currentPath.includes('categories') || 
+                           currentPath.includes('suppliers') || 
+                           currentPath.includes('customers');
+
+      if (role !== 'admin' && isAdminRoute) {
+        alert("⚠️ Invalid Session Path! Redirecting to allowed workspace.");
+        window.location.href = "/products";
+      }
+
+      // 6. 🚪 Universal Logout Event Listener
+      document.addEventListener('click', (e) => {
+        const target = e.target as any;
+        if (target && (target.textContent?.toLowerCase().includes('logout') || target.id === 'logoutBtn')) {
+          e.preventDefault();
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/';
+        }
+      });
+    </script>
+  </body>
+</html>

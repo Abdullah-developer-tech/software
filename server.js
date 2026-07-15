@@ -6,19 +6,12 @@ require('dotenv').config();
 
 const app = express();
 
-// 1. CORS Configuration - Strict and Reliable
-app.use(cors({
-    origin: '*', // Allow all origins to connect
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+// Middleware
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json());
-
-// 2. Static Files (Uploads)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// 3. Dynamic Route Loader
+// Routes
 const routesToLoad = [
     { path: '/api/auth', file: './routes/auth.routes' },
     { path: '/api/products', file: './routes/product.routes' },
@@ -32,51 +25,27 @@ const routesToLoad = [
 ];
 
 routesToLoad.forEach(route => {
-    try {
-        app.use(route.path, require(route.file));
-        console.log(`✅ Loaded: ${route.path}`);
-    } catch (err) {
-        console.error(`❌ FAILED to load: ${route.file}`, err.message);
-    }
+    try { app.use(route.path, require(route.file)); } catch (err) { console.error(`❌ Failed: ${route.file}`); }
 });
 
-// 4. Base Route
-app.get('/', (req, res) => {
-    res.json({ message: "Stock Manager ERP Backend is Live and Running!" });
-});
+app.get('/', (req, res) => res.json({ message: "Stock Manager ERP Backend is Live!" }));
 
-// 5. Database & Server Start
-const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/erp_system';
+// Database Connection & Serverless Handler
+const connectDB = async () => {
+    if (mongoose.connection.readyState >= 1) return;
+    return mongoose.connect(process.env.MONGODB_URI);
+};
 
-mongoose.connect(MONGODB_URI)
-    .then(async () => {
-        console.log('✅ Connected to MongoDB Successfully!');
+// Vercel Export
+module.exports = async (req, res) => {
+    await connectDB();
+    return app(req, res);
+};
 
-        // --- Admin Setup Logic ---
-        try {
-            const User = require('./models/User');
-            const bcrypt = require('bcryptjs');
-            const myEmail = "aslamabdullah288@gmail.com";
-            
-            const adminExists = await User.findOne({ email: myEmail });
-            if (!adminExists) {
-                const hashedPassword = await bcrypt.hash("12345678", 10);
-                const admin = new User({
-                    name: "Abdullah Admin",
-                    email: myEmail,
-                    password: hashedPassword,
-                    role: 'admin'
-                });
-                await admin.save();
-                console.log("🎯 Fresh Admin User created!");
-            }
-        } catch (e) {
-            console.log("Admin setup skip (already exists or error).");
-        }
-
-        app.listen(PORT, () => {
-            console.log(`🚀 Server running on port: ${PORT}`);
-        });
-    })
-    .catch(err => console.error('❌ Database Connection Error:', err.message));
+// Local Development
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = 5000;
+    connectDB().then(() => {
+        app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    });
+}
